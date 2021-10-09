@@ -1,5 +1,6 @@
 {
-    "name": "OmiyaGames.Template.Editor",
+    "name": "BBImporter.Editor",
+    "rootNamespace": "",
     "references": [
         "OmiyaGames.Template"
     ],
@@ -12,5 +13,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }
