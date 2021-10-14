@@ -7,27 +7,34 @@ using UnityEngine;
 [CanEditMultipleObjects]
 public class BBModelImporterEditor : ScriptedImporterEditor
 {
-    SerializedProperty m_materialTemplate;
+    private SerializedProperty m_materialTemplate;
+    private SerializedProperty m_combineMeshes;
+    private SerializedProperty m_filterHidden;
 
     public override void OnEnable()
     {
         base.OnEnable();
         // Once in OnEnable, retrieve the serializedObject property and store it.
         m_materialTemplate = serializedObject.FindProperty("materialTemplate");
+        m_combineMeshes = serializedObject.FindProperty("combineMeshes");
+        m_filterHidden = serializedObject.FindProperty("filterHidden");
     }
     
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
         
+        EditorGUILayout.PropertyField(m_materialTemplate);
+        EditorGUILayout.PropertyField(m_combineMeshes);
+        EditorGUILayout.PropertyField(m_filterHidden);
+        
+        // Apply the changes so Undo/Redo is working
+        serializedObject.ApplyModifiedProperties();
+        
         if (GUILayout.Button("Reimport"))
         {
             ApplyAndImport();
         }
-        EditorGUILayout.PropertyField(m_materialTemplate);
-
-        // Apply the changes so Undo/Redo is working
-        serializedObject.ApplyModifiedProperties();
 
         // Call ApplyRevertGUI to show Apply and Revert buttons.
         ApplyRevertGUI();
