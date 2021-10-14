@@ -34,7 +34,7 @@ public class BBModelImporter : ScriptedImporter
         }
         else
         {
-            LoadGroup(ctx, obj, obj["outliner"], "", materials);
+            LoadGroup(ctx, obj, materials);
         }
     }
     private List<Material> LoadMaterials(AssetImportContext ctx, JObject obj)
@@ -88,15 +88,16 @@ public class BBModelImporter : ScriptedImporter
         {
             foreach (var entry in currentGroup)
             {
-                var guid = entry.Value<string>();
-                var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
-                if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
                 switch (entry.Type)
                 {
                     case JTokenType.String:
+                        var guid = entry.Value<string>();
+                        var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
+                        if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
                         mesh.AddElement(file, element);
                         break;
                     case JTokenType.Object:
+                        //TODO: Handle visible = false here
                         CombineGroupRecursive(entry["children"], entry["name"].Value<string>() + "/");
                         break;
                     default:
@@ -109,30 +110,34 @@ public class BBModelImporter : ScriptedImporter
         mesh.BakeGameObject(ctx, file["name"].Value<string>());
     }
     
-    private void LoadGroup(AssetImportContext ctx, JObject file, JToken currentGroup, string currentPrefix, List<Material> material)
+    private void LoadGroup(AssetImportContext ctx, JObject file, List<Material> material)
     {
-        foreach (var entry in currentGroup)
+        void LoadGroupRecursively(JToken currentGroup, string currentPrefix)
         {
-            var guid = entry.Value<string>();
-            var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
-            if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
-            
-            switch (entry.Type)
+            foreach (var entry in currentGroup)
             {
-                case JTokenType.String:
-                    var mesh = new BBModelMesh(material);
-                    mesh.AddElement(file, element);
-                    var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                    mesh.BakeGameObject(ctx, currentPrefix + name);
-                    break;
-                case JTokenType.Object:
-                    LoadGroup(ctx, file, entry["children"], entry["name"].Value<string>() + "/", material);
-                    break;
-                default:
-                    Debug.Log("Unhandled type " + entry.Type);
-                    break;
+                switch (entry.Type)
+                {
+                    case JTokenType.String:
+                        var guid = entry.Value<string>();
+                        var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
+                        if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
+                        var mesh = new BBModelMesh(material);
+                        mesh.AddElement(file, element);
+                        var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
+                        mesh.BakeGameObject(ctx, currentPrefix + name);
+                        break;
+                    case JTokenType.Object:
+                        //TODO: Handle visible = false here
+                        LoadGroupRecursively(entry["children"], entry["name"].Value<string>() + "/");
+                        break;
+                    default:
+                        Debug.Log("Unhandled type " + entry.Type);
+                        break;
+                }
             }
         }
+        LoadGroupRecursively(file["outliner"], "");
     }
     public class BBMesh
     {

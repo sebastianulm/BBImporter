@@ -104,7 +104,7 @@ public class BBModelMesh
             triangleList = new List<int>();
             triangles[materialNum] = triangleList;
         }
-        for (var i = 0; i < 3; i++)
+        for (var i = 2; i >= 0; i--)
         {
             Vector3 pos = BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[i]]);
             Vector2 uv = Vector2.zero;
@@ -239,13 +239,15 @@ public class BBModelMesh
         {
             vertices = new[]
             {
-                a, b, c, d, c, b
+                //a, b, c, d, c, b
+                b, c, d, c, b, a
             };
             if (quadUVs != null)
             {
                 uvs = new[]
                 {
-                    quadUVs[0], quadUVs[1], quadUVs[2], quadUVs[3], quadUVs[2], quadUVs[1]
+                    //quadUVs[0], quadUVs[1], quadUVs[2], quadUVs[3], quadUVs[2], quadUVs[1]
+                    quadUVs[1], quadUVs[2], quadUVs[3], quadUVs[2], quadUVs[1], quadUVs[0]
                 };
             }
             else
@@ -257,13 +259,15 @@ public class BBModelMesh
         {
             vertices = new[]
             {
-                a, b, c, c, d, a
+                //a, b, c, c, d, a
+                a, d, c, c, b, a
             };
             if (quadUVs != null)
             {
                 uvs = new[]
                 {
-                    quadUVs[0], quadUVs[1], quadUVs[2], quadUVs[2], quadUVs[3], quadUVs[0]
+                    //quadUVs[0], quadUVs[1], quadUVs[2], quadUVs[2], quadUVs[3], quadUVs[0]
+                    quadUVs[0], quadUVs[3], quadUVs[2], quadUVs[2], quadUVs[1], quadUVs[0]
                 };
             }
             else
