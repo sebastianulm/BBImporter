@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace BBImporter
 {
@@ -93,6 +95,7 @@ namespace BBImporter
         // Face => TopLeft, BottomLeft, topRight, TopRight, BottomLeft, BottomRight
         private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 textureSize)
         {
+            
             var topLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[1] / textureSize.y);
             var topRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[1] / textureSize.y);
             var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[3] / textureSize.y);
@@ -172,16 +175,17 @@ namespace BBImporter
                 boxVertices[i] = (rotation * (boxVertices[i] - origin)) + origin;
             }
         }
+        [Conditional("BBIMPORTER_DEBUG")]
         private void DebugDrawVertices()
         {
-            Debug.DrawLine(Vector3.zero, boxVertices[0] * 1.1f, Color.red, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[1] * 1.1f, Color.green, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[2] * 1.1f, Color.blue, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[3] * 1.1f, Color.yellow, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[4] * 1.1f, Color.magenta, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[5] * 1.1f, Color.cyan, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[6] * 1.1f, Color.white, 2000);
-            Debug.DrawLine(Vector3.zero, boxVertices[7] * 1.1f, Color.black, 2000);
+            Debug.DrawLine(Vector3.zero, boxVertices[0] * 1.1f, Color.red, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[1] * 1.1f, Color.green, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[2] * 1.1f, Color.blue, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[3] * 1.1f, Color.yellow, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[4] * 1.1f, Color.magenta, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[5] * 1.1f, Color.cyan, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[6] * 1.1f, Color.white, 20);
+            Debug.DrawLine(Vector3.zero, boxVertices[7] * 1.1f, Color.black, 20);
         }
         private static void SortComponents(ref Vector3 a, ref Vector3 b)
         {
