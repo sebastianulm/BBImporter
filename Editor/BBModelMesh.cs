@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Editor;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 

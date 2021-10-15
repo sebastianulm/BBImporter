@@ -1,4 +1,4 @@
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 public static class BBModelUtil

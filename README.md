@@ -8,9 +8,8 @@ Unity's own Package Manager supports [importing packages through a URL to a Git 
 1. First, on this repository page, click the "Clone or download" button, and copy over this repository's HTTPS URL.  
 2. Then click on the + button on the upper-left-hand corner of the Package Manager, select "Add package from git URL..." on the context menu, then paste this repo's URL!
 
-## LICENSE
-
-Overall package is licensed under [MIT](/LICENSE.md)
+## Dependencies: 
+* https://github.com/jilleJr/Newtonsoft.Json-for-Unity.git#upm
 
 ## Project Goals
 - It's a simple Plugin. It does ONLY imports.
@@ -52,3 +51,6 @@ The Process is very similar to the built in Importers.
 - BugReports should include the File you try to import
 - I do this as a side project to my side project's sideproject, attention will be low
 - Be civil
+
+## LICENSE
+[MIT](/LICENSE.md)

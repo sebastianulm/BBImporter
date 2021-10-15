@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using Unity.Plastic.Newtonsoft.Json.Linq;
-using UnityEditor;
+using Newtonsoft.Json.Linq;
 using UnityEditor.AssetImporters;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
 [ScriptedImporter(1, "bbmodel")]
 public class BBModelImporter : ScriptedImporter
