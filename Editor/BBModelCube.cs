@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace Editor
+namespace BBImporter
 {
     public class BBModelCube
     {
