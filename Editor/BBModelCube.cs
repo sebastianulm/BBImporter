@@ -34,7 +34,8 @@ namespace BBImporter
             foreach (var face in cube.faces)
             {
                 int material = face.Value.texture;
-                var boxUVs = MakeBoxUVs(face.Key, face.Value.uv, textureSizes[material]);
+                ;
+                var boxUVs = MakeBoxUVs(face.Key, face.Value.uv, textureSizes[material], face.Value.rotation);
                 switch (face.Key)
                 {
                     case "north":
@@ -93,44 +94,44 @@ namespace BBImporter
             }
         }
         // Face => TopLeft, BottomLeft, topRight, TopRight, BottomLeft, BottomRight
-        private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 textureSize)
+        private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 textureSize, int rotation)
         {
-            
-            var topLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[1] / textureSize.y);
-            var topRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[1] / textureSize.y);
-            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[3] / textureSize.y);
-            var bottomRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[3] / textureSize.y);
+            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[1] / textureSize.y);
+            var topRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[3] / textureSize.y);
+            var topLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[3] / textureSize.y);
+            var bottomRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[1] / textureSize.y);
+            ApplyRotation(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             switch (faceKey)
             {
                 case "north": //+z axis
                     return new[]
                     {
-                        topRight, topLeft, bottomLeft, Vector2.zero, Vector2.zero, Vector2.zero,
+                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft
                     };
                 case "south": //-z axis
                     return new[]
                     {
-                        topRight, topLeft, bottomLeft, topLeft, bottomRight, bottomLeft,
+                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
                     };
                 case "east": //+x axis
                     return new[]
                     {
-                        topRight, topLeft, bottomLeft, topLeft, bottomRight, bottomLeft,
+                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
                     };
                 case "west": //+x axis
                     return new[]
                     {
-                        topRight, topLeft, bottomLeft, topLeft, bottomRight, bottomLeft,
+                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
                     };
                 case "up": //+y axis
                     return new[]
                     {
-                        topRight, topLeft, bottomLeft, topRight, bottomLeft, topLeft,
+                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
                     };
                 case "down": //-y axis
                     return new[]
                     {
-                        topRight, topLeft, bottomLeft, topLeft, bottomRight, bottomLeft,
+                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
                     };
             }
             throw new NotImplementedException();
@@ -187,6 +188,13 @@ namespace BBImporter
             Debug.DrawLine(Vector3.zero, boxVertices[6] * 1.1f, Color.white, 20);
             Debug.DrawLine(Vector3.zero, boxVertices[7] * 1.1f, Color.black, 20);
         }
+        private static void ApplyRotation(ref Vector2 topLeft, ref Vector2 topRight, ref Vector2 bottomLeft, ref Vector2 bottomRight, int rotation)
+        {
+            topLeft = Rotate(topLeft, rotation);
+            topRight = Rotate(topRight, rotation);
+            bottomLeft = Rotate(bottomLeft, rotation);
+            bottomRight = Rotate(bottomRight, rotation);
+        }
         private static void SortComponents(ref Vector3 a, ref Vector3 b)
         {
             if (a.x > b.x)
@@ -207,6 +215,16 @@ namespace BBImporter
                 a.z = b.z;
                 b.z = tmp;
             }
+        }
+        public static Vector2 Rotate(Vector2 v, float degrees) {
+            float sin = Mathf.Sin(degrees * Mathf.Deg2Rad);
+            float cos = Mathf.Cos(degrees * Mathf.Deg2Rad);
+         
+            float tx = v.x;
+            float ty = v.y;
+            v.x = (cos * tx) - (sin * ty);
+            v.y = (sin * tx) + (cos * ty);
+            return v;
         }
     }
 }
