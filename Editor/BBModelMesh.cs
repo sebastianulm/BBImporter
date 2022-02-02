@@ -111,7 +111,7 @@ namespace BBImporter
                 if (textureSizes.Count > materialNum)
                 {
                     var texSize = textureSizes[materialNum];
-                    uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[0]]) / texSize;
+                    uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[i]]) / texSize;
                 }
                 var vert = new BBVertex(pos, uv);
                 var num = vertices.Count;
