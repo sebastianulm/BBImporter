@@ -96,45 +96,16 @@ namespace BBImporter
         // Face => TopLeft, BottomLeft, topRight, TopRight, BottomLeft, BottomRight
         private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 textureSize, int rotation)
         {
-            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[1] / textureSize.y);
-            var topRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[3] / textureSize.y);
-            var topLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[3] / textureSize.y);
-            var bottomRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[1] / textureSize.y);
+            var topLeft = new Vector2(faceUVs[0] / textureSize.x, (faceUVs[1] / textureSize.y));
+            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, (faceUVs[1] + faceUVs[3]) / textureSize.y);
+            var topRight = new Vector2((faceUVs[0] + faceUVs[2]) / textureSize.x, (faceUVs[1] / textureSize.y));
+            var bottomRight = new Vector2((faceUVs[0] + faceUVs[2]) / textureSize.x, (faceUVs[1] + faceUVs[3]) / textureSize.y);
+            FlipY(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             ApplyRotation(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
-            switch (faceKey)
+            return new[]
             {
-                case "north": //+z axis
-                    return new[]
-                    {
-                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft
-                    };
-                case "south": //-z axis
-                    return new[]
-                    {
-                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
-                    };
-                case "east": //+x axis
-                    return new[]
-                    {
-                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
-                    };
-                case "west": //+x axis
-                    return new[]
-                    {
-                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
-                    };
-                case "up": //+y axis
-                    return new[]
-                    {
-                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
-                    };
-                case "down": //-y axis
-                    return new[]
-                    {
-                        topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft,
-                    };
-            }
-            throw new NotImplementedException();
+                topLeft, topRight, bottomRight, topLeft, bottomRight, bottomLeft
+            };
         }
         private void MakeBoxVertices()
         {
@@ -194,6 +165,13 @@ namespace BBImporter
             topRight = Rotate(topRight, rotation);
             bottomLeft = Rotate(bottomLeft, rotation);
             bottomRight = Rotate(bottomRight, rotation);
+        }
+        private static void FlipY(ref Vector2 topLeft, ref Vector2 topRight, ref Vector2 bottomLeft, ref Vector2 bottomRight, int rotation)
+        {
+            topLeft.y = 1-topLeft.y;
+            topRight.y = 1-topRight.y;
+            bottomLeft.y = 1-bottomLeft.y;
+            bottomRight.y = 1-bottomRight.y;
         }
         private static void SortComponents(ref Vector3 a, ref Vector3 b)
         {
