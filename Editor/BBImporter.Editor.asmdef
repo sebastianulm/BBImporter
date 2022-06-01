@@ -1,8 +1,7 @@
 {
     "name": "BBImporter.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "BBImporter",
     "references": [
-        "OmiyaGames.Template"
     ],
     "includePlatforms": [
         "Editor"

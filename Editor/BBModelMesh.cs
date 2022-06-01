@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using UnityEditor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 
@@ -46,7 +47,7 @@ namespace BBImporter
         public void BakeGameObject(AssetImportContext ctx, string name)
         {
             var mesh = new Mesh();
-            mesh.name = name;
+            mesh.name = name = name.Replace("/", ".");
             mesh.vertices = vertices.Select(x => x.position).ToArray();
             mesh.uv = vertices.Select(x => x.uv).ToArray();
             mesh.subMeshCount = triangles.Count;
@@ -88,14 +89,17 @@ namespace BBImporter
                 }
                 else if (faceEntry.Value.vertices.Length == 4)
                 {
-                    CreateMeshQuad(bbMesh, faceEntry);
+                    CreateMeshQuad3(bbMesh, faceEntry);
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    //throw new NotImplementedException();
+                    //this SHOULD be an error, but BlockBench sometimes has loose Edges, so lets just ignore them here
+                    Debug.LogWarning($"Found loose edge in {faceEntry.Key}. Blockbench does that.");
                 }
             }
         }
+
         private void CreateMeshTriangle(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry)
         {
             int materialNum = faceEntry.Value.texture;
@@ -112,169 +116,119 @@ namespace BBImporter
                 {
                     var texSize = textureSizes[materialNum];
                     uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[i]]) / texSize;
+                    uv.y = 1 - uv.y;
                 }
                 var vert = new BBVertex(pos, uv);
-                var num = vertices.Count;
                 vertices.Add(vert);
-                triangleList.Add(num);
+                triangleList.Add(vertices.Count-1);
             }
         }
-        private void CreateMeshQuad(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry)
+
+        private void CreateMeshQuad3(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry)
         {
+            var aVtx = ReadVertex(bbMesh, faceEntry, 0);
+            var bVtx = ReadVertex(bbMesh, faceEntry, 1);
+            var cVtx = ReadVertex(bbMesh, faceEntry, 2);
+            var dVtx = ReadVertex(bbMesh, faceEntry, 3);
+            
             int materialNum = faceEntry.Value.texture;
             if (!triangles.TryGetValue(materialNum, out var triangleList))
             {
                 triangleList = new List<int>();
                 triangles[materialNum] = triangleList;
             }
-            var quadVertices = new[]
+            
+            var a = aVtx.position;
+            var b = bVtx.position;
+            var c = cVtx.position;
+            var d = dVtx.position;
+
+            int startVertex = vertices.Count;
+            
+            if (IsDiagonal(a, b, c, d))
             {
-                BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[0]]), BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[1]]), BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[2]]), BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[3]])
-            };
-            Vector2[] quadUVs = null;
-            if (textureSizes.Count > materialNum)
-            {
-                quadUVs = new[]
-                {
-                    BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[0]]), BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[1]]), BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[2]]), BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[3]]),
-                };
+                WriteTriangle(aVtx, bVtx, cVtx, dVtx, triangleList);
             }
-            QuadToTris(quadVertices, quadUVs, out var triVertices, out var triUVs);
-            for (int i = 0; i < 6; i++)
+            else if (IsDiagonal(a, c, b, d))
             {
-                Vector3 pos = triVertices[i];
-                Vector2 uv = Vector2.zero;
-                if (textureSizes.Count > materialNum)
-                {
-                    var texSize = textureSizes[faceEntry.Value.texture];
-                    uv = triUVs[i] / texSize;
-                }
-                var vert = new BBVertex(pos, uv);
-                var num = vertices.Count;
-                vertices.Add(vert);
-                triangleList.Add(num);
-            }
-        }
-        /*
-    private static Vector3[] MakeCubeVertices(Vector3 from, Vector3 to, Vector3 origin, float inflate, Vector3 angles)
-    {
-        SortComponents(ref from, ref to);
-        Vector3 center = (from + to) * 0.5f;
-
-        var rot = Quaternion.Euler(angles);
-
-        var offset = origin;
-
-        from.x -= inflate;
-        from.y -= inflate;
-        from.z -= inflate;
-
-        to.x += inflate;
-        to.y += inflate;
-        to.z += inflate;
-
-
-        var c0 = (rot * new Vector3(from.x, from.y, to.z) - offset) + offset;
-        var c1 = (rot * new Vector3(to.x, from.y, to.z) - offset) + offset;
-        var c2 = (rot * new Vector3(to.x, from.y, from.z) - offset) + offset;
-        var c3 = (rot * new Vector3(from.x, from.y, from.z) - offset) + offset;
-
-        var c4 = (rot * new Vector3(from.x, to.y, to.z) - offset) + offset;
-        var c5 = (rot * new Vector3(to.x, to.y, to.z) - offset) + offset;
-        var c6 = (rot * new Vector3(to.x, to.y, from.z) - offset) + offset;
-        var c7 = (rot * new Vector3(from.x, to.y, from.z) - offset) + offset;
-
-        return new Vector3[]
-        {
-            // Bottom
-            c0, c1, c2, c3,
-            // Left
-            c7, c4, c0, c3,
-            // Front
-            c4, c5, c1, c0,
-            // Back
-            c6, c7, c3, c2,
-            // Right
-            c5, c6, c2, c1,
-            // Top
-            c7, c6, c5, c4,
-        };
-    }
-    private int[] MakeCubeTriangles()
-    {
-        return new int[]
-        {
-            // Bottom
-            3, 1, 0, 3, 2, 1,
-            // Left
-            7, 5, 4, 7, 6, 5,
-            // Front
-            11, 9, 8, 11, 10, 9,
-            // Back
-            15, 13, 12, 15, 14, 13,
-            // Right
-            19, 17, 16, 19, 18, 17,
-            // Top
-            23, 21, 20, 23, 22, 21,
-        };
-    }
-    */
-        private static void QuadToTris(Vector3[] quad, Vector2[] quadUVs, out Vector3[] vertices, out Vector2[] uvs)
-        {
-            Debug.Assert(quad.Length == 4);
-            var a = quad[0];
-            var b = quad[1];
-            var c = quad[2];
-            var d = quad[3];
-
-            var ba = b - a;
-            var ca = c - a;
-            var da = d - a;
-            //Quads are sometimes sorted bad. Original code uses some really odd way of sorthing this. This is simpler, but different, and might break.
-            var normal = Vector3.Cross(ba, ca);
-            var acAngle = Vector3.SignedAngle(ba, ca, normal);
-            var adAngle = Vector3.SignedAngle(ba, da, normal);
-
-            if (acAngle > adAngle)
-            {
-                vertices = new[]
-                {
-                    //a, b, c, d, c, b
-                    b, c, d, c, b, a
-                };
-                if (quadUVs != null)
-                {
-                    uvs = new[]
-                    {
-                        //quadUVs[0], quadUVs[1], quadUVs[2], quadUVs[3], quadUVs[2], quadUVs[1]
-                        quadUVs[1], quadUVs[2], quadUVs[3], quadUVs[2], quadUVs[1], quadUVs[0]
-                    };
-                }
-                else
-                {
-                    uvs = null;
-                }
+                WriteTriangle(aVtx, cVtx, bVtx, dVtx, triangleList);
             }
             else
             {
-                vertices = new[]
-                {
-                    //a, b, c, c, d, a
-                    a, d, c, c, b, a
-                };
-                if (quadUVs != null)
-                {
-                    uvs = new[]
-                    {
-                        //quadUVs[0], quadUVs[1], quadUVs[2], quadUVs[2], quadUVs[3], quadUVs[0]
-                        quadUVs[0], quadUVs[3], quadUVs[2], quadUVs[2], quadUVs[1], quadUVs[0]
-                    };
-                }
-                else
-                {
-                    uvs = null;
-                }
+                WriteTriangle(aVtx, dVtx, bVtx, cVtx, triangleList);
             }
+        }
+
+        private bool IsDiagonal(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
+            //var gizmo = GetImportGizmo();
+            //gizmo.DrawLine(Vector3.zero, c, Color.red);
+            //gizmo.DrawLine(a, b, Color.blue);
+            var pointOnLine = GetPointOnLine(c, a, b);
+            //gizmo.DrawLine(Vector3.zero, pointOnLine, Color.cyan);
+            var plane = new Plane((c - pointOnLine).normalized, b);
+            var distance = plane.GetDistanceToPoint(d);
+            return distance < 0;
+        }
+        private bool IsCoplanar(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
+            var cDot = Vector3.Dot(c - a, c - b);
+            var dDot = Vector3.Dot(d - a, d - b);
+            return (cDot > 0 && dDot > 0) || (cDot <= 0 && dDot <= 0);
+        }
+        private BBVertex ReadVertex(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry, int index)
+        {
+            int materialNum = faceEntry.Value.texture;
+            Vector3 pos = BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[index]]);
+            Vector2 uv = Vector2.zero;
+            if (textureSizes.Count > materialNum)
+            {
+                var texSize = textureSizes[materialNum];
+                uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[index]]) / texSize;
+                uv.y = 1 - uv.y;
+            }
+            return new BBVertex(pos, uv);
+        }
+        private void WriteTriangle(BBVertex aVtx, BBVertex bVtx, BBVertex cVtx, BBVertex dVtx, List<int> triangleList)
+        {
+            int startVertex = vertices.Count;
+            vertices.Add(cVtx);
+            vertices.Add(aVtx);
+            vertices.Add(bVtx);
+            
+            var a = aVtx.position;
+            var b = bVtx.position;
+            var c = cVtx.position;
+            var d = dVtx.position;
+
+            if (IsCoplanar(a, b, c, d))
+            {
+                vertices.Add(dVtx);
+                vertices.Add(bVtx);
+                vertices.Add(aVtx);
+            }
+            else
+            {
+                vertices.Add(dVtx);
+                vertices.Add(bVtx);
+                vertices.Add(aVtx);
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                triangleList.Add(startVertex+i);
+            }
+        }
+        Vector3 GetPointOnLine(Vector3 p, Vector3 a, Vector3 b)
+        {
+            return a + Vector3.Project(p - a, b - a);
+        }
+    }
+
+    static class FloatArrayExtension
+    {
+        public static Vector3 ReadVector3(this float[] arr)
+        {
+            return BBModelUtil.ReadVector3(arr);
         }
     }
 }

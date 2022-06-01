@@ -1,0 +1,17 @@
+{
+  "name": "BBImporter.Gizmo",
+  "rootNamespace": "",
+  "references": [
+    "OmiyaGames.Template",
+    "UnityEditor.UI",
+    "UnityEngine.UI"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
