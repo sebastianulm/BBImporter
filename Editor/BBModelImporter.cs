@@ -17,7 +17,8 @@ namespace BBImporter
     
         private static readonly int Metallic = Shader.PropertyToID("_Metallic");
         private static readonly int Smoothness = Shader.PropertyToID("_Glossiness");
-    
+
+        private Vector3 Resolution;
         public override void OnImportAsset(AssetImportContext ctx)
         {
             //var basePath = Path.GetDirectoryName(ctx.assetPath) + "/" + Path.GetFileNameWithoutExtension(ctx.assetPath);
@@ -25,7 +26,7 @@ namespace BBImporter
 
             var obj = JObject.Parse(file);
             var materials = LoadMaterials(ctx, obj);
-
+            Resolution = LoadResolution(obj);
             if (combineMeshes)
             {
                 CombineGroup(ctx, obj, materials);
@@ -34,6 +35,10 @@ namespace BBImporter
             {
                 LoadGroup(ctx, obj, materials);
             }
+        }
+        private Vector3 LoadResolution(JObject obj)
+        {
+            return new Vector3(obj["resolution"]["width"].Value<float>(), obj["resolution"]["height"].Value<float>());
         }
         private List<Material> LoadMaterials(AssetImportContext ctx, JObject obj)
         {
@@ -81,7 +86,7 @@ namespace BBImporter
         }
         private void CombineGroup(AssetImportContext ctx, JObject file, List<Material> material)
         {
-            BBModelMesh mesh = new BBModelMesh(material);
+            BBModelMesh mesh = new BBModelMesh(material, Resolution);
             void CombineGroupRecursive(JToken currentGroup, string currentPrefix)
             {
                 foreach (var entry in currentGroup)
@@ -120,7 +125,7 @@ namespace BBImporter
                             var guid = entry.Value<string>();
                             var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
                             if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
-                            var mesh = new BBModelMesh(material);
+                            var mesh = new BBModelMesh(material, Resolution);
                             mesh.AddElement(file, element);
                             var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
                             mesh.BakeGameObject(ctx, currentPrefix + name);

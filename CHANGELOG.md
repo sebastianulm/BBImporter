@@ -1,5 +1,7 @@
 # Change Log:
 
+### 0.0.6
+* Fixed UV not honoring Resolution setting
 ### 0.0.5
 * Fixed UV flipped bug
 * Fixed Mesh winding issues with newer files

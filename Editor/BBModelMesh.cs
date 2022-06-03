@@ -14,9 +14,11 @@ namespace BBImporter
         private readonly List<Vector2> textureSizes;
         private List<BBVertex> vertices;
         private Dictionary<int, List<int>> triangles;
-        public BBModelMesh(List<Material> materials)
+        private Vector2 resolution;
+        public BBModelMesh(List<Material> materials, Vector2 resolution)
         {
             this.materials = materials;
+            this.resolution = resolution;
             textureSizes = new List<Vector2>();
             vertices = new List<BBVertex>();
             triangles = new Dictionary<int, List<int>>();
@@ -115,7 +117,7 @@ namespace BBImporter
                 if (textureSizes.Count > materialNum)
                 {
                     var texSize = textureSizes[materialNum];
-                    uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[i]]) / texSize;
+                    uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[i]]) / resolution;
                     uv.y = 1 - uv.y;
                 }
                 var vert = new BBVertex(pos, uv);
@@ -184,7 +186,7 @@ namespace BBImporter
             if (textureSizes.Count > materialNum)
             {
                 var texSize = textureSizes[materialNum];
-                uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[index]]) / texSize;
+                uv = BBModelUtil.ReadVector2(faceEntry.Value.uv[faceEntry.Value.vertices[index]]) / resolution;
                 uv.y = 1 - uv.y;
             }
             return new BBVertex(pos, uv);
