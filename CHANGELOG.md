@@ -1,5 +1,7 @@
 # Change Log:
 
+### 0.0.7
+* Fixed UV being nullable in BlockBench. Defaulting to 0
 ### 0.0.6
 * Fixed UV not honoring Resolution setting
 ### 0.0.5
