@@ -28,12 +28,12 @@ namespace BBImporter
             if (arr == null) return Quaternion.identity;
             return Quaternion.Euler(arr[0], -arr[1], -arr[2]);
         }
-        internal static Vector2 ReadVector2(float[] arr)
+        internal static Vector2 ReadVector2(float?[] arr)
         {
             var ret = new Vector2();
             Debug.Assert(arr.Length == 2);
-            ret.x = arr[0];
-            ret.y = arr[1];
+            ret.x = arr[0].HasValue?arr[0].Value:0;
+            ret.y = arr[1].HasValue?arr[1].Value:0;
             return ret;
         }
     }

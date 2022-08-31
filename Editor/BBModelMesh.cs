@@ -81,7 +81,15 @@ namespace BBImporter
         }
         private void ParseMesh(JToken element)
         {
-            var bbMesh = element.ToObject<BBModelImporter.BBMesh>();
+            BBModelImporter.BBMesh bbMesh = default;
+            try
+            {
+               bbMesh = element.ToObject<BBModelImporter.BBMesh>();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
             //Fix visibility
             foreach (var faceEntry in bbMesh.faces)
             {
