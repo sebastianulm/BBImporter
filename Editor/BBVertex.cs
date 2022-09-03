@@ -41,5 +41,13 @@ namespace BBImporter
         {
             return !Equals(left, right);
         }
+        public BBVertex Transform(Matrix4x4 orientation)
+        {
+            return new BBVertex(orientation .MultiplyPoint3x4(position), uv);
+        }
+        public override string ToString()
+        {
+            return $"[{position}]";
+        }
     }
 }

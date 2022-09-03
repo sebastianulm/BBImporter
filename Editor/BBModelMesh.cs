@@ -90,6 +90,10 @@ namespace BBImporter
             {
                 Debug.LogException(e);
             }
+            var origin = bbMesh.origin.ReadVector3();
+            var rot = Quaternion.Euler(bbMesh.rotation.ReadVector3());
+            Matrix4x4 orientation = Matrix4x4.TRS(origin, rot, Vector3.one);
+            var startPos = vertices.Count;
             //Fix visibility
             foreach (var faceEntry in bbMesh.faces)
             {
@@ -107,6 +111,12 @@ namespace BBImporter
                     //this SHOULD be an error, but BlockBench sometimes has loose Edges, so lets just ignore them here
                     Debug.LogWarning($"Found loose edge in {faceEntry.Key}. Blockbench does that.");
                 }
+            }
+            for (int i = startPos; i < vertices.Count; i++)
+            {
+                var before = vertices[i];
+                vertices[i] = vertices[i].Transform(orientation);
+                Debug.Log("Before: " + before + " after: " + vertices[i]);
             }
         }
 
