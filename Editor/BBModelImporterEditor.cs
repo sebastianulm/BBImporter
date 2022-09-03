@@ -11,6 +11,8 @@ namespace BBImporter
         private SerializedProperty m_materialTemplate;
         private SerializedProperty m_combineMeshes;
         private SerializedProperty m_filterHidden;
+        private SerializedProperty m_ignoreName;
+
 
         public override void OnEnable()
         {
@@ -19,6 +21,7 @@ namespace BBImporter
             m_materialTemplate = serializedObject.FindProperty("materialTemplate");
             m_combineMeshes = serializedObject.FindProperty("combineMeshes");
             m_filterHidden = serializedObject.FindProperty("filterHidden");
+            m_ignoreName = serializedObject.FindProperty("ignoreName");
         }
     
         public override void OnInspectorGUI()
@@ -28,6 +31,8 @@ namespace BBImporter
             EditorGUILayout.PropertyField(m_materialTemplate);
             EditorGUILayout.PropertyField(m_combineMeshes);
             EditorGUILayout.PropertyField(m_filterHidden);
+            EditorGUILayout.PropertyField(m_ignoreName);
+
         
             // Apply the changes so Undo/Redo is working
             serializedObject.ApplyModifiedProperties();

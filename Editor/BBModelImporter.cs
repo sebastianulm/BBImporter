@@ -14,6 +14,8 @@ namespace BBImporter
         [SerializeField] private Material materialTemplate;
         [SerializeField] private bool combineMeshes;
         [SerializeField] private bool filterHidden;
+        [SerializeField] private string ignoreName;
+
     
         private static readonly int Metallic = Shader.PropertyToID("_Metallic");
         private static readonly int Smoothness = Shader.PropertyToID("_Glossiness");
@@ -97,6 +99,7 @@ namespace BBImporter
                             var guid = entry.Value<string>();
                             var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
                             if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
+                            if (element["name"]?.Value<string>().Equals(ignoreName, StringComparison.InvariantCultureIgnoreCase) == true) continue;
                             mesh.AddElement(file, element);
                             break;
                         case JTokenType.Object:

@@ -116,7 +116,6 @@ namespace BBImporter
             {
                 var before = vertices[i];
                 vertices[i] = vertices[i].Transform(orientation);
-                Debug.Log("Before: " + before + " after: " + vertices[i]);
             }
         }
 
