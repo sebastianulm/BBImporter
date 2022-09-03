@@ -1,5 +1,7 @@
 # Change Log:
-
+### 0.0.8
+* Combine Mesh now honors positon and rotation.
+* Added filter by name
 ### 0.0.7
 * Fixed UV being nullable in BlockBench. Defaulting to 0
 ### 0.0.6
