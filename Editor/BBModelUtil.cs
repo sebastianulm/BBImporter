@@ -9,18 +9,18 @@ namespace BBImporter
         {
             if (arr == null) return Vector3.zero;
             var ret = new Vector3();
-            ret.x = -arr[0].Value<float>();
+            ret.x = arr[0].Value<float>();
             ret.y = arr[1].Value<float>();
-            ret.z = arr[2].Value<float>();
+            ret.z = -arr[2].Value<float>();
             return ret;
         }
         internal static Vector3 ReadVector3(float[] arr)
         {
             var ret = new Vector3();
             if (arr == null) return Vector3.zero;
-            ret.x = -arr[0];
+            ret.x = arr[0];
             ret.y = arr[1];
-            ret.z = arr[2];
+            ret.z = -arr[2];
             return ret;
         }
         internal static Quaternion ReadQuaternion(float[] arr)
