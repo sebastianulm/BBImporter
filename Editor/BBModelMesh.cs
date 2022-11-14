@@ -37,7 +37,7 @@ namespace BBImporter
         public void AddElement(JObject file, JToken element)
         {
             var type = element["type"];
-            if (type == null)
+            if (type == null || type.Value<string>() == "cube")
             {
                 ParseCube(element);
             }
@@ -112,10 +112,12 @@ namespace BBImporter
                     Debug.LogWarning($"Found loose edge in {faceEntry.Key}. Blockbench does that.");
                 }
             }
+            
             for (int i = startPos; i < vertices.Count; i++)
             {
                 var before = vertices[i];
-                vertices[i] = vertices[i].Transform(orientation);
+                var after = before.Transform(orientation);
+                vertices[i] = after;
             }
         }
 
