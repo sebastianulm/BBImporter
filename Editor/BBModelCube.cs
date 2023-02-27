@@ -96,9 +96,9 @@ namespace BBImporter
         private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 textureSize, int rotation)
         {
             var topLeft = new Vector2(faceUVs[0] / textureSize.x, (faceUVs[1] / textureSize.y));
-            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, (faceUVs[1] + faceUVs[3]) / textureSize.y);
-            var topRight = new Vector2((faceUVs[0] + faceUVs[2]) / textureSize.x, (faceUVs[1] / textureSize.y));
-            var bottomRight = new Vector2((faceUVs[0] + faceUVs[2]) / textureSize.x, (faceUVs[1] + faceUVs[3]) / textureSize.y);
+            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[3] / textureSize.y);
+            var topRight = new Vector2(faceUVs[2] / textureSize.x, (faceUVs[1] / textureSize.y));
+            var bottomRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[3] / textureSize.y);
             FlipY(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             ApplyRotation(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             return new[]
