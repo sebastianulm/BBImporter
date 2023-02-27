@@ -9,7 +9,7 @@ namespace BBImporter
     public class BBModelImporterEditor : ScriptedImporterEditor
     {
         private SerializedProperty m_materialTemplate;
-        private SerializedProperty m_combineMeshes;
+        private SerializedProperty m_importMode;
         private SerializedProperty m_filterHidden;
         private SerializedProperty m_ignoreName;
 
@@ -19,7 +19,7 @@ namespace BBImporter
             base.OnEnable();
             // Once in OnEnable, retrieve the serializedObject property and store it.
             m_materialTemplate = serializedObject.FindProperty("materialTemplate");
-            m_combineMeshes = serializedObject.FindProperty("combineMeshes");
+            m_importMode = serializedObject.FindProperty("importMode");
             m_filterHidden = serializedObject.FindProperty("filterHidden");
             m_ignoreName = serializedObject.FindProperty("ignoreName");
         }
@@ -29,7 +29,7 @@ namespace BBImporter
             serializedObject.Update();
         
             EditorGUILayout.PropertyField(m_materialTemplate);
-            EditorGUILayout.PropertyField(m_combineMeshes);
+            EditorGUILayout.PropertyField(m_importMode);
             EditorGUILayout.PropertyField(m_filterHidden);
             EditorGUILayout.PropertyField(m_ignoreName);
 

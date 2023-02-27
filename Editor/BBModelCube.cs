@@ -8,7 +8,7 @@ namespace BBImporter
 {
     public class BBModelCube
     {
-        private readonly BBModelImporter.BBCube cube;
+        private readonly BBCube cube;
         private Vector3 from;
         private Vector3 to;
         private Vector3 origin;
@@ -18,7 +18,7 @@ namespace BBImporter
 
         public BBModelCube(JToken element)
         {
-            cube = element.ToObject<BBModelImporter.BBCube>();
+            cube = element.ToObject<BBCube>();
             from = BBModelUtil.ReadVector3(cube.from);
             to = BBModelUtil.ReadVector3(cube.to);
             SortComponents(ref @from, ref to);
@@ -97,7 +97,7 @@ namespace BBImporter
             var bottomLeft = new Vector2(faceUVs[0] / resolution.x, faceUVs[3] / resolution.y);
             var topRight = new Vector2(faceUVs[2] / resolution.x, (faceUVs[1] / resolution.y));
             var bottomRight = new Vector2(faceUVs[2] / resolution.x, faceUVs[3] / resolution.y);
-            FlipY(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight);
+            FlipY(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             ApplyRotation(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             return new[]
             {
@@ -163,7 +163,7 @@ namespace BBImporter
             bottomLeft = Rotate(bottomLeft, rotation);
             bottomRight = Rotate(bottomRight, rotation);
         }
-        private static void FlipY(ref Vector2 topLeft, ref Vector2 topRight, ref Vector2 bottomLeft, ref Vector2 bottomRight)
+        private static void FlipY(ref Vector2 topLeft, ref Vector2 topRight, ref Vector2 bottomLeft, ref Vector2 bottomRight, int rotation)
         {
             topLeft.y = 1-topLeft.y;
             topRight.y = 1-topRight.y;

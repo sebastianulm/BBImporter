@@ -33,7 +33,7 @@ namespace BBImporter
                 textureSizes.Add(Vector2.one);
             }
         }
-        public void AddElement(JObject file, JToken element)
+        public void AddElement(JObject file, JToken element, Vector3 originVector)
         {
             var type = element["type"];
             if (type == null || type.Value<string>() == "cube")
@@ -45,7 +45,7 @@ namespace BBImporter
                 ParseMesh(element);
             }
         }
-        public void BakeGameObject(AssetImportContext ctx, string name)
+        public GameObject BakeGameObject(AssetImportContext ctx, string name)
         {
             var mesh = new Mesh();
             mesh.name = name = name.Replace("/", ".");
@@ -70,8 +70,7 @@ namespace BBImporter
                 .OrderBy(x => x.Key)
                 .Select(x => materials[x.Key]).ToArray();
             ctx.AddObjectToAsset(name, go);
-            if (ctx.mainObject == null)
-                ctx.SetMainObject(go);
+            return go;
         }
         private void ParseCube(JToken element)
         {
@@ -80,10 +79,10 @@ namespace BBImporter
         }
         private void ParseMesh(JToken element)
         {
-            BBModelImporter.BBMesh bbMesh = default;
+            BBMesh bbMesh = default;
             try
             {
-               bbMesh = element.ToObject<BBModelImporter.BBMesh>();
+               bbMesh = element.ToObject<BBMesh>();
             }
             catch (Exception e)
             {
@@ -120,7 +119,7 @@ namespace BBImporter
             }
         }
 
-        private void CreateMeshTriangle(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry)
+        private void CreateMeshTriangle(BBMesh bbMesh, KeyValuePair<string, BBMeshFace> faceEntry)
         {
             int materialNum = faceEntry.Value.texture;
             if (!triangles.TryGetValue(materialNum, out var triangleList))
@@ -144,7 +143,7 @@ namespace BBImporter
             }
         }
 
-        private void CreateMeshQuad3(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry)
+        private void CreateMeshQuad3(BBMesh bbMesh, KeyValuePair<string, BBMeshFace> faceEntry)
         {
             var aVtx = ReadVertex(bbMesh, faceEntry, 0);
             var bVtx = ReadVertex(bbMesh, faceEntry, 1);
@@ -196,7 +195,7 @@ namespace BBImporter
             var dDot = Vector3.Dot(d - a, d - b);
             return (cDot > 0 && dDot > 0) || (cDot <= 0 && dDot <= 0);
         }
-        private BBVertex ReadVertex(BBModelImporter.BBMesh bbMesh, KeyValuePair<string, BBModelImporter.BBMeshFace> faceEntry, int index)
+        private BBVertex ReadVertex(BBMesh bbMesh, KeyValuePair<string, BBMeshFace> faceEntry, int index)
         {
             int materialNum = faceEntry.Value.texture;
             Vector3 pos = BBModelUtil.ReadVector3(bbMesh.vertices[faceEntry.Value.vertices[index]]);

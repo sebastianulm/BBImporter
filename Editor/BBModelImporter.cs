@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEditor.AssetImporters;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BBImporter
 {
@@ -12,7 +13,7 @@ namespace BBImporter
     public class BBModelImporter : ScriptedImporter
     {
         [SerializeField] private Material materialTemplate;
-        [SerializeField] private bool combineMeshes;
+        [SerializeField] private MeshImportMode importMode;
         [SerializeField] private bool filterHidden;
         [SerializeField] private string ignoreName;
 
@@ -29,14 +30,35 @@ namespace BBImporter
             var obj = JObject.Parse(file);
             var materials = LoadMaterials(ctx, obj);
             Resolution = LoadResolution(obj);
-            if (combineMeshes)
+            var animations = LoadAnimations(ctx, obj);
+            switch (importMode)
             {
-                CombineGroup(ctx, obj, materials);
+                case MeshImportMode.MergeIntoOne:
+                    CombineGroup(ctx, obj, materials);
+                    break;
+                case MeshImportMode.KeepSeparate:
+                    LoadGroup(ctx, obj, materials);
+                    break;
+                case MeshImportMode.PreserveHierarchy:
+                    LoadHierarchy(ctx, obj, materials);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            else
+        }
+        private List<BBAnimation> LoadAnimations(AssetImportContext ctx, JObject obj)
+        {
+            var ret = new List<BBAnimation>();
+            var animToken = obj["animations"];
+            if (animToken is { HasValues: true })
             {
-                LoadGroup(ctx, obj, materials);
+                foreach (var token in obj["animations"])
+                {
+                    var anim = token.ToObject<BBAnimation>();
+                    ret.Add(anim);
+                }
             }
+            return ret;
         }
         private Vector3 LoadResolution(JObject obj)
         {
@@ -98,9 +120,12 @@ namespace BBImporter
                         case JTokenType.String:
                             var guid = entry.Value<string>();
                             var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
-                            if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
-                            if (element["name"]?.Value<string>().Equals(ignoreName, StringComparison.InvariantCultureIgnoreCase) == true) continue;
-                            mesh.AddElement(file, element);
+                            if (element["visibility"]?.Value<bool>() == false && filterHidden) 
+                                continue;
+                            if (element["name"]?.Value<string>().Equals(ignoreName, StringComparison.InvariantCultureIgnoreCase) == true) 
+                                continue;
+                            //Outline process origin. Needs to be subtracted from the mesh positions
+                            mesh.AddElement(file, element, Vector3.zero);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
@@ -113,7 +138,9 @@ namespace BBImporter
                 }
             }
             CombineGroupRecursive(file["outliner"], "");
-            mesh.BakeGameObject(ctx, file["name"].Value<string>());
+            var go = mesh.BakeGameObject(ctx, file["name"].Value<string>());
+            ctx.AddObjectToAsset("root", go);
+            ctx.SetMainObject(go);
         }
     
         private void LoadGroup(AssetImportContext ctx, JObject file, List<Material> material)
@@ -127,11 +154,13 @@ namespace BBImporter
                         case JTokenType.String:
                             var guid = entry.Value<string>();
                             var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
-                            if (element["visibility"]?.Value<bool>() == false && filterHidden) continue;
+                            if (element["visibility"]?.Value<bool>() == false && filterHidden) 
+                                continue;
                             var mesh = new BBModelMesh(material, Resolution);
-                            mesh.AddElement(file, element);
+                            var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
+                            mesh.AddElement(file, element, origin??Vector3.zero);
                             var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            mesh.BakeGameObject(ctx, currentPrefix + name);
+                            var go = mesh.BakeGameObject(ctx, currentPrefix + name);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
@@ -144,66 +173,53 @@ namespace BBImporter
                 }
             }
             LoadGroupRecursively(file["outliner"], "");
+            var fakeRoot = new GameObject();
+            ctx.AddObjectToAsset("root", fakeRoot);
+            ctx.SetMainObject(fakeRoot);
         }
-        public class BBMesh
+        private void LoadHierarchy(AssetImportContext ctx, JObject file, List<Material> material)
         {
-            public int color;
-            public float[] origin;
-            public float[] rotation;
-            public bool? visibility;
-            public string name;
-            public Dictionary<string, float[]> vertices;
-            public Dictionary<string, BBMeshFace> faces;
-            public string type;
-            public string uuid;
+            void LoadGroupRecursively(JToken currentGroup, GameObject parent)
+            {
+                foreach (var entry in currentGroup)
+                {
+                    switch (entry.Type)
+                    {
+                        case JTokenType.String:
+                            var guid = entry.Value<string>();
+                            var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
+                            if (element["visibility"]?.Value<bool>() == false && filterHidden) 
+                                continue;
+                            var mesh = new BBModelMesh(material, Resolution);
+                            var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
+                            mesh.AddElement(file, element, origin??Vector3.zero);
+                            var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
+                            var go = mesh.BakeGameObject(ctx, name);
+                            go.transform.SetParent(parent.transform);
+                            break;
+                        case JTokenType.Object:
+                            var outliner = entry.ToObject<BBOutliner>();
+                            var boneGO = new GameObject(outliner.name);
+                            boneGO.transform.SetParent(parent.transform);
+                            LoadGroupRecursively(entry["children"], boneGO);
+                            break;
+                        default:
+                            Debug.Log("Unhandled type " + entry.Type);
+                            break;
+                    }
+                }
+            }
+            var rootGO = new GameObject();
+            ctx.AddObjectToAsset("root", rootGO);
+            ctx.SetMainObject(rootGO);
+            LoadGroupRecursively(file["outliner"], rootGO);
         }
+    }
 
-        public class BBMeshFace
-        {
-            public Dictionary<string, float?[]> uv;
-            public string[] vertices;
-            public int texture;
-        }
-
-        public class BBCube
-        {
-            public string name;
-            public bool rescale;
-            public float[] from;
-            public float[] to;
-            public int autouv;
-            public int color;
-            public bool locked;
-            public float[] rotation;
-            public float[] origin;
-            public float inflate;
-            public bool? visibility;
-            public Dictionary<string, BBCubeFace> faces;
-            public string uuid;
-        }
-
-        public class BBCubeFace
-        {
-            public float[] uv;
-            public int rotation;
-            public int texture;
-        }
-
-        public class BBTexture
-        {
-            public string path;
-            public string name;
-            public string folder;
-            public string @namespace;
-            public string id;
-            public bool particle;
-            public string render_mode;
-            public bool visible;
-            public string mode;
-            public bool saved;
-            public string uuid;
-            public string relative_path;
-            public string source;
-        }
+    public enum MeshImportMode
+    {
+        PreserveHierarchy,
+        MergeIntoOne,
+        KeepSeparate,
     }
 }
