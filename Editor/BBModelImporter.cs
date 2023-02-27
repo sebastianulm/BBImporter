@@ -195,12 +195,14 @@ namespace BBImporter
                             mesh.AddElement(file, element, origin??Vector3.zero);
                             var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
                             var go = mesh.BakeGameObject(ctx, name);
+                            go.transform.localPosition = origin.Value;
                             go.transform.SetParent(parent.transform);
                             break;
                         case JTokenType.Object:
                             var outliner = entry.ToObject<BBOutliner>();
-                            var boneGO = new GameObject(outliner.name);
+                            var boneGO = new GameObject(outliner.name + "-Bone");
                             boneGO.transform.SetParent(parent.transform);
+                            boneGO.transform.localPosition = outliner.origin.ReadVector3();
                             LoadGroupRecursively(entry["children"], boneGO);
                             break;
                         default:
