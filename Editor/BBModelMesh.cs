@@ -76,7 +76,7 @@ namespace BBImporter
         private void ParseCube(JToken element)
         {
             var bbCube = new BBModelCube(element);
-            bbCube.GetMesh(vertices, triangles, textureSizes);
+            bbCube.GetMesh(vertices, triangles, resolution);
         }
         private void ParseMesh(JToken element)
         {

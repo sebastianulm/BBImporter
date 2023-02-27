@@ -27,14 +27,12 @@ namespace BBImporter
             rotation = BBModelUtil.ReadQuaternion(cube.rotation);
             MakeBoxVertices();
         }
-        public void GetMesh(List<BBVertex> vertices, Dictionary<int, List<int>> triangles, List<Vector2> textureSizes)
+        public void GetMesh(List<BBVertex> vertices, Dictionary<int, List<int>> triangles, Vector2 resolution)
         {
             this.DebugDrawVertices();
             foreach (var face in cube.faces)
             {
-                int material = face.Value.texture;
-                ;
-                var boxUVs = MakeBoxUVs(face.Key, face.Value.uv, textureSizes[material], face.Value.rotation);
+                var boxUVs = MakeBoxUVs(face.Key, face.Value.uv, resolution, face.Value.rotation);
                 switch (face.Key)
                 {
                     case "north":
@@ -93,13 +91,13 @@ namespace BBImporter
             }
         }
         // Face => TopLeft, BottomLeft, topRight, TopRight, BottomLeft, BottomRight
-        private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 textureSize, int rotation)
+        private Vector2[] MakeBoxUVs(string faceKey, float[] faceUVs, Vector2 resolution, int rotation)
         {
-            var topLeft = new Vector2(faceUVs[0] / textureSize.x, (faceUVs[1] / textureSize.y));
-            var bottomLeft = new Vector2(faceUVs[0] / textureSize.x, faceUVs[3] / textureSize.y);
-            var topRight = new Vector2(faceUVs[2] / textureSize.x, (faceUVs[1] / textureSize.y));
-            var bottomRight = new Vector2(faceUVs[2] / textureSize.x, faceUVs[3] / textureSize.y);
-            FlipY(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
+            var topLeft = new Vector2(faceUVs[0] / resolution.x, (faceUVs[1] / resolution.y));
+            var bottomLeft = new Vector2(faceUVs[0] / resolution.x, faceUVs[3] / resolution.y);
+            var topRight = new Vector2(faceUVs[2] / resolution.x, (faceUVs[1] / resolution.y));
+            var bottomRight = new Vector2(faceUVs[2] / resolution.x, faceUVs[3] / resolution.y);
+            FlipY(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight);
             ApplyRotation(ref topLeft, ref topRight, ref bottomLeft, ref bottomRight, rotation);
             return new[]
             {
@@ -165,7 +163,7 @@ namespace BBImporter
             bottomLeft = Rotate(bottomLeft, rotation);
             bottomRight = Rotate(bottomRight, rotation);
         }
-        private static void FlipY(ref Vector2 topLeft, ref Vector2 topRight, ref Vector2 bottomLeft, ref Vector2 bottomRight, int rotation)
+        private static void FlipY(ref Vector2 topLeft, ref Vector2 topRight, ref Vector2 bottomLeft, ref Vector2 bottomRight)
         {
             topLeft.y = 1-topLeft.y;
             topRight.y = 1-topRight.y;
