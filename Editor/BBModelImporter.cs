@@ -16,37 +16,38 @@ namespace BBImporter
         [SerializeField] private MeshImportMode importMode;
         [SerializeField] private bool filterHidden;
         [SerializeField] private string ignoreName;
-
-    
+        
         private static readonly int Metallic = Shader.PropertyToID("_Metallic");
         private static readonly int Smoothness = Shader.PropertyToID("_Glossiness");
+
+        private Dictionary<string, GameObject> groups;
 
         private Vector3 Resolution;
         public override void OnImportAsset(AssetImportContext ctx)
         {
+            groups = new Dictionary<string, GameObject>();
             //var basePath = Path.GetDirectoryName(ctx.assetPath) + "/" + Path.GetFileNameWithoutExtension(ctx.assetPath);
             string file = File.ReadAllText(ctx.assetPath);
-
             var obj = JObject.Parse(file);
             var materials = LoadMaterials(ctx, obj);
             Resolution = LoadResolution(obj);
-            var animations = LoadAnimations(ctx, obj);
             switch (importMode)
             {
-                case MeshImportMode.MergeIntoOne:
+                case MeshImportMode.MergeAllIntoOneObject:
                     CombineGroup(ctx, obj, materials);
                     break;
-                case MeshImportMode.KeepSeparate:
+                case MeshImportMode.SeparateObjects:
                     LoadGroup(ctx, obj, materials);
                     break;
-                case MeshImportMode.PreserveHierarchy:
+                case MeshImportMode.WithHierarchyAndAnimations:
                     LoadHierarchy(ctx, obj, materials);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            var animations = LoadAnimations(ctx, obj, groups);
         }
-        private List<BBAnimation> LoadAnimations(AssetImportContext ctx, JObject obj)
+        private List<BBAnimation> LoadAnimations(AssetImportContext ctx, JObject obj, Dictionary<string, GameObject> groups)
         {
             var ret = new List<BBAnimation>();
             var animToken = obj["animations"];
@@ -56,6 +57,8 @@ namespace BBImporter
                 {
                     var anim = token.ToObject<BBAnimation>();
                     ret.Add(anim);
+                    var clip = anim.ToClip(groups);
+                    ctx.AddObjectToAsset(anim.name, clip);
                 }
             }
             return ret;
@@ -139,7 +142,6 @@ namespace BBImporter
             }
             CombineGroupRecursive(file["outliner"], "");
             var go = mesh.BakeGameObject(ctx, file["name"].Value<string>());
-            ctx.AddObjectToAsset("root", go);
             ctx.SetMainObject(go);
         }
     
@@ -159,8 +161,9 @@ namespace BBImporter
                             var mesh = new BBModelMesh(material, Resolution);
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
                             mesh.AddElement(file, element, origin??Vector3.zero);
-                            var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var go = mesh.BakeGameObject(ctx, currentPrefix + name);
+                            var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
+                            var go = mesh.BakeGameObject(ctx, currentPrefix + goName);
+                            ctx.AddObjectToAsset(goName, go);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
@@ -193,16 +196,17 @@ namespace BBImporter
                             var mesh = new BBModelMesh(material, Resolution);
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
                             mesh.AddElement(file, element, origin??Vector3.zero);
-                            var name = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var go = mesh.BakeGameObject(ctx, name);
-                            go.transform.localPosition = origin.Value;
+                            var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
+                            var go = mesh.BakeGameObject(ctx, goName);
+                            go.transform.localPosition = origin??Vector3.zero;
                             go.transform.SetParent(parent.transform);
                             break;
                         case JTokenType.Object:
                             var outliner = entry.ToObject<BBOutliner>();
-                            var boneGO = new GameObject(outliner.name + "-Bone");
+                            var boneGO = new GameObject(outliner.name + "-Group");
                             boneGO.transform.SetParent(parent.transform);
                             boneGO.transform.localPosition = outliner.origin.ReadVector3();
+                            groups.Add(outliner.uuid, boneGO);
                             LoadGroupRecursively(entry["children"], boneGO);
                             break;
                         default:
@@ -220,8 +224,8 @@ namespace BBImporter
 
     public enum MeshImportMode
     {
-        PreserveHierarchy,
-        MergeIntoOne,
-        KeepSeparate,
+        WithHierarchyAndAnimations,
+        MergeAllIntoOneObject,
+        SeparateObjects,
     }
 }
