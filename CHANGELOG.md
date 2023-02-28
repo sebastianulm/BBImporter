@@ -1,4 +1,8 @@
 # Change Log:
+### 0.1.0
+* Basic animation support
+* Support for keeping hierarchy and bones (required for animation)
+* Various Bugfixes and keeping up with newer versions of Blockbench (tested with 4.6.4)
 ### 0.0.9
 * Fixed cube support for newer BB versions
 * Changed coordinate system, z+ is north, x+ is east
