@@ -26,8 +26,8 @@ This leads to Models looking the same way.
 Additionally, NORTH in Blockbench will be Vector3.backwards in Unity. THIS MIGHT CHANGE
 
 ### Settings
-* Material Template -> A copy of this Material will be created and mainTexture set to the texture of the fae
-* Combine Meshes -> when true only one Mesh is created, containing the entire file. When false a Mesh per object in the File is created.
+* Material Template -> A copy of this Material will be created and mainTexture set to the texture of the face
+* Import Mode -> Select here how the blockbench file is conveerted into game objects
 * Filter Hidden -> No meshes will be created for file objects that are hidden
 
 ### Materials
@@ -39,12 +39,18 @@ A Submesh is created for Texture and the vertices are sorted accordingly.
 A MeshRenderer is attached to each generated object, supplied with the created Mesh and Material list. 
 The Process is very similar to the built in Importers.
 
+### Animations
+Still very much work in Progress. Needs to be imported as Hierarchy. BlockBench uses Groups
+to animate, so this importer creates empty game objects for groups and animates their transforms.
+
+
 ### Planned features
 - Fixing Bugs first, then moving on to more stuff
 - (new Settings) Shared Material, use MaterialPropertyBlock on renderer to set texture
 - (Feature) Texture-Deduplication
 - (new Setting) Shared material, the generated GOs will have a shared material. Useful for pallete textures
 - (Feature) Runtime Script that retains some parsed form of the parsed Model file
+- (Feature) Animation bezier if compatible with Unities animation system
 
 ### Support
 - Forks and PR's welcome, but expect delays
