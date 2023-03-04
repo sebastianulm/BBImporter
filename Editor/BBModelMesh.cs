@@ -33,7 +33,7 @@ namespace BBImporter
                 textureSizes.Add(Vector2.one);
             }
         }
-        public void AddElement(JObject file, JToken element, Vector3 originVector)
+        public void AddElement(JObject file, JToken element)
         {
             var type = element["type"];
             if (type == null || type.Value<string>() == "cube")
@@ -45,11 +45,11 @@ namespace BBImporter
                 ParseMesh(element);
             }
         }
-        public GameObject BakeGameObject(AssetImportContext ctx, string name)
+        public GameObject BakeGameObject(AssetImportContext ctx, string name, Vector3 origin)
         {
             var mesh = new Mesh();
             mesh.name = name = name.Replace("/", ".");
-            mesh.vertices = vertices.Select(x => x.position).ToArray();
+            mesh.vertices = vertices.Select(x => x.position - origin).ToArray();
             mesh.uv = vertices.Select(x => x.uv).ToArray();
             mesh.subMeshCount = triangles.Count;
             int count = 0;

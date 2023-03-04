@@ -128,7 +128,7 @@ namespace BBImporter
                             if (element["name"]?.Value<string>().Equals(ignoreName, StringComparison.InvariantCultureIgnoreCase) == true) 
                                 continue;
                             //Outline process origin. Needs to be subtracted from the mesh positions
-                            mesh.AddElement(file, element, Vector3.zero);
+                            mesh.AddElement(file, element);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
@@ -141,7 +141,7 @@ namespace BBImporter
                 }
             }
             CombineGroupRecursive(file["outliner"], "");
-            var go = mesh.BakeGameObject(ctx, file["name"].Value<string>());
+            var go = mesh.BakeGameObject(ctx, file["name"].Value<string>(), Vector3.zero);
             ctx.SetMainObject(go);
         }
     
@@ -160,9 +160,9 @@ namespace BBImporter
                                 continue;
                             var mesh = new BBModelMesh(material, Resolution);
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
-                            mesh.AddElement(file, element, origin??Vector3.zero);
+                            mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var go = mesh.BakeGameObject(ctx, currentPrefix + goName);
+                            var go = mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
                             ctx.AddObjectToAsset(goName, go);
                             break;
                         case JTokenType.Object:
@@ -195,9 +195,9 @@ namespace BBImporter
                                 continue;
                             var mesh = new BBModelMesh(material, Resolution);
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
-                            mesh.AddElement(file, element, origin??Vector3.zero);
+                            mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var go = mesh.BakeGameObject(ctx, goName);
+                            var go = mesh.BakeGameObject(ctx, goName, origin??Vector3.zero);
                             go.transform.localPosition = origin??Vector3.zero;
                             go.transform.SetParent(parent.transform);
                             break;
