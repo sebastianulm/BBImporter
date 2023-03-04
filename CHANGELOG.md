@@ -1,4 +1,6 @@
 # Change Log:
+### 0.1.1
+* Animation Bugfixes when importing as hierarchy
 ### 0.1.0
 * Basic animation support
 * Support for keeping hierarchy and bones (required for animation)
