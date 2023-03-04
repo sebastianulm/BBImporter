@@ -7,7 +7,7 @@ namespace BBImporter
     public class BBKeyFrame
     {
         public string channel;
-        public List<Dictionary<string, float>> data_points;
+        public List<Dictionary<string, string>> data_points;
         public string uuid;
         public float time;
         public int color;
@@ -26,6 +26,16 @@ namespace BBImporter
                 case "scale": return BBKeyFrameChannel.scale;
                 default: throw new NotImplementedException($"Channel {channel} is not yet implemented");
             }
+        }
+        public Vector3 GetDataPoints()
+        {
+            var xStr = data_points[0]["x"].Trim();
+            var yStr = data_points[0]["y"].Trim();
+            var zStr = data_points[0]["z"].Trim();
+            var xVal = string.IsNullOrEmpty(xStr)?0:float.Parse(xStr);
+            var yVal = string.IsNullOrEmpty(yStr)?0:float.Parse(yStr);
+            var zVal = string.IsNullOrEmpty(zStr)?0:float.Parse(zStr);
+            return new Vector3(xVal, yVal, zVal);
         }
     }
     

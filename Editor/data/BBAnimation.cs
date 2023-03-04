@@ -22,12 +22,12 @@ namespace BBImporter
         {
             AnimationClip ret = new AnimationClip()
             {
-                name =name,
+                name = name,
                 frameRate = snapping,
                 wrapMode = GetWrapMode(),
                 legacy = true,
             };
-            
+
             foreach (var kv in animators)
             {
                 if (kv.Value.HasChannel(BBKeyFrameChannel.position))
@@ -45,6 +45,7 @@ namespace BBImporter
             {
                 case "once": return WrapMode.Once;
                 case "loop": return WrapMode.Loop;
+                case "hold": return WrapMode.ClampForever;
                 default: throw new NotImplementedException($"Wrap mode {loop} is not yet implemented");
             }
         }
@@ -58,9 +59,10 @@ namespace BBImporter
                 if (bbKeyFrame.GetChannel() != BBKeyFrameChannel.position)
                     continue;
                 var position = groupObject.transform.position;
-                curveX.AddKey(bbKeyFrame.time, bbKeyFrame.data_points[0]["x"] + position.x);
-                curveY.AddKey(bbKeyFrame.time, bbKeyFrame.data_points[0]["y"] + position.y);
-                curveZ.AddKey(bbKeyFrame.time, bbKeyFrame.data_points[0]["z"] + position.z);
+                var dataPoints = bbKeyFrame.GetDataPoints();
+                curveX.AddKey(bbKeyFrame.time, dataPoints.x + position.x);
+                curveZ.AddKey(bbKeyFrame.time, dataPoints.y + position.z);
+                curveY.AddKey(bbKeyFrame.time, dataPoints.z + position.y);
             }
             clip.SetCurve(animator.name + "-Group", typeof(Transform), "localPosition.x", curveX);
             clip.SetCurve(animator.name + "-Group", typeof(Transform), "localPosition.y", curveY);
@@ -75,9 +77,10 @@ namespace BBImporter
             {
                 if (bbKeyFrame.GetChannel() != BBKeyFrameChannel.scale)
                     continue;
-                curveX.AddKey(bbKeyFrame.time, bbKeyFrame.data_points[0]["x"]);
-                curveY.AddKey(bbKeyFrame.time, bbKeyFrame.data_points[0]["y"]);
-                curveZ.AddKey(bbKeyFrame.time, bbKeyFrame.data_points[0]["z"]);
+                var dataPoints = bbKeyFrame.GetDataPoints();
+                curveX.AddKey(bbKeyFrame.time, dataPoints.x);
+                curveY.AddKey(bbKeyFrame.time, dataPoints.y);
+                curveZ.AddKey(bbKeyFrame.time, dataPoints.z);
             }
             clip.SetCurve(animator.name + "-Group", typeof(Transform), "localScale.x", curveX);
             clip.SetCurve(animator.name + "-Group", typeof(Transform), "localScale.y", curveY);
@@ -93,10 +96,8 @@ namespace BBImporter
             {
                 if (bbKeyFrame.GetChannel() != BBKeyFrameChannel.rotatiom)
                     continue;
-                var xVal = bbKeyFrame.data_points[0]["x"];
-                var yVal = bbKeyFrame.data_points[0]["y"];
-                var zVal = bbKeyFrame.data_points[0]["z"];
-                var quat = Quaternion.Euler(xVal, yVal, zVal);
+                var dataPoints = bbKeyFrame.GetDataPoints();
+                var quat = Quaternion.Euler(dataPoints.x, dataPoints.y, dataPoints.z);
                 curveX.AddKey(bbKeyFrame.time, quat.x);
                 curveY.AddKey(bbKeyFrame.time, quat.y);
                 curveZ.AddKey(bbKeyFrame.time, quat.z);
