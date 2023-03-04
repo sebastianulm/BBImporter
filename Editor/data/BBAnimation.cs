@@ -59,16 +59,15 @@ namespace BBImporter
             {
                 if (bbKeyFrame.GetChannel() != BBKeyFrameChannel.position)
                     continue;
-                var position = groupObject.transform.position;
                 var dataPoints = bbKeyFrame.GetDataPoints();
-                curveX.AddKey(bbKeyFrame.time, dataPoints.x + position.x);
-                curveZ.AddKey(bbKeyFrame.time, dataPoints.y + position.z);
-                curveY.AddKey(bbKeyFrame.time, dataPoints.z + position.y);
+                curveX.AddKey(bbKeyFrame.time, dataPoints.x);
+                curveZ.AddKey(bbKeyFrame.time, dataPoints.y);
+                curveY.AddKey(bbKeyFrame.time, dataPoints.z);
             }
             var path = GetPath(groupObject.transform);
-            clip.SetCurve(path, typeof(Transform), "localPosition.x", curveX);
-            clip.SetCurve(path, typeof(Transform), "localPosition.y", curveY);
-            clip.SetCurve(path, typeof(Transform), "localPosition.z", curveZ);
+            clip.SetCurve(path, typeof(Transform), "position.x", curveX);
+            clip.SetCurve(path, typeof(Transform), "position.y", curveY);
+            clip.SetCurve(path, typeof(Transform), "position.z", curveZ);
         }
         private void AddScaleChannel(BBAnimator animator, AnimationClip clip, GameObject groupObject)
         {
