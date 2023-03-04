@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace BBImporter
@@ -33,9 +34,9 @@ namespace BBImporter
                 if (kv.Value.HasChannel(BBKeyFrameChannel.position))
                     AddPositionChannel(kv.Value, ret, groups[kv.Key]);
                 if (kv.Value.HasChannel(BBKeyFrameChannel.rotatiom))
-                    AddRotationChannel(kv.Value, ret);
+                    AddRotationChannel(kv.Value, ret, groups[kv.Key]);
                 if (kv.Value.HasChannel(BBKeyFrameChannel.scale))
-                    AddScaleChannel(kv.Value, ret);
+                    AddScaleChannel(kv.Value, ret, groups[kv.Key]);
             }
             return ret;
         }
@@ -64,11 +65,12 @@ namespace BBImporter
                 curveZ.AddKey(bbKeyFrame.time, dataPoints.y + position.z);
                 curveY.AddKey(bbKeyFrame.time, dataPoints.z + position.y);
             }
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localPosition.x", curveX);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localPosition.y", curveY);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localPosition.z", curveZ);
+            var path = GetPath(groupObject.transform);
+            clip.SetCurve(path, typeof(Transform), "localPosition.x", curveX);
+            clip.SetCurve(path, typeof(Transform), "localPosition.y", curveY);
+            clip.SetCurve(path, typeof(Transform), "localPosition.z", curveZ);
         }
-        private void AddScaleChannel(BBAnimator animator, AnimationClip clip)
+        private void AddScaleChannel(BBAnimator animator, AnimationClip clip, GameObject groupObject)
         {
             var curveX = new AnimationCurve();
             var curveY = new AnimationCurve();
@@ -81,12 +83,13 @@ namespace BBImporter
                 curveX.AddKey(bbKeyFrame.time, dataPoints.x);
                 curveY.AddKey(bbKeyFrame.time, dataPoints.y);
                 curveZ.AddKey(bbKeyFrame.time, dataPoints.z);
-            }
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localScale.x", curveX);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localScale.y", curveY);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localScale.z", curveZ);
+            }            
+            var path = GetPath(groupObject.transform);
+            clip.SetCurve(path, typeof(Transform), "localScale.x", curveX);
+            clip.SetCurve(path, typeof(Transform), "localScale.y", curveY);
+            clip.SetCurve(path, typeof(Transform), "localScale.z", curveZ);
         }
-        private void AddRotationChannel(BBAnimator animator, AnimationClip clip)
+        private void AddRotationChannel(BBAnimator animator, AnimationClip clip, GameObject groupObject)
         {
             var curveX = new AnimationCurve();
             var curveY = new AnimationCurve();
@@ -103,10 +106,22 @@ namespace BBImporter
                 curveZ.AddKey(bbKeyFrame.time, quat.z);
                 curveW.AddKey(bbKeyFrame.time, quat.w);
             }
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localRotation.x", curveX);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localRotation.y", curveY);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localRotation.z", curveZ);
-            clip.SetCurve(animator.name + "-Group", typeof(Transform), "localRotation.w", curveW);
+            var path = GetPath(groupObject.transform);
+            clip.SetCurve(path, typeof(Transform), "localRotation.x", curveX);
+            clip.SetCurve(path, typeof(Transform), "localRotation.y", curveY);
+            clip.SetCurve(path, typeof(Transform), "localRotation.z", curveZ);
+            clip.SetCurve(path, typeof(Transform), "localRotation.w", curveW);
+        }
+        private string GetPath(Transform trans)
+        {
+            List<string> parents = new List<string>();
+            while (trans.transform != trans.root)
+            {
+                parents.Add(trans.name);
+                trans = trans.parent;
+            }
+            parents.Reverse();
+            return string.Join("/", parents);
         }
     }
 }
