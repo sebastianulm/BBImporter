@@ -16,6 +16,7 @@ namespace BBImporter
         [SerializeField] private MeshImportMode importMode;
         [SerializeField] private bool filterHidden;
         [SerializeField] private string ignoreName;
+        [SerializeField] private bool addAnimation;
         
         private static readonly int Metallic = Shader.PropertyToID("_Metallic");
         private static readonly int Smoothness = Shader.PropertyToID("_Glossiness");
@@ -54,14 +55,17 @@ namespace BBImporter
             if (animToken is { HasValues: true })
             {
                 var mainGO = ctx.mainObject as GameObject;
-                var animation = mainGO.AddComponent<Animation>();
+                Animation animation = null; 
+                if (addAnimation && mainGO != null)
+                    animation = mainGO.AddComponent<Animation>();
                 foreach (var token in obj["animations"])
                 {
                     var anim = token.ToObject<BBAnimation>();
                     ret.Add(anim);
                     var clip = anim.ToClip(groups);
                     ctx.AddObjectToAsset(anim.name, clip);
-                    animation.AddClip(clip, clip.name);
+                    if (animation != null) 
+                        animation.AddClip(clip, clip.name);
                 }
             }
             return ret;

@@ -12,6 +12,7 @@ namespace BBImporter
         private SerializedProperty m_importMode;
         private SerializedProperty m_filterHidden;
         private SerializedProperty m_ignoreName;
+        private SerializedProperty m_addAnimation;
 
         public override void OnEnable()
         {
@@ -21,6 +22,7 @@ namespace BBImporter
             m_importMode = serializedObject.FindProperty("importMode");
             m_filterHidden = serializedObject.FindProperty("filterHidden");
             m_ignoreName = serializedObject.FindProperty("ignoreName");
+            m_addAnimation = serializedObject.FindProperty("addAnimation");
         }
     
         public override void OnInspectorGUI()
@@ -31,8 +33,8 @@ namespace BBImporter
             EditorGUILayout.PropertyField(m_importMode);
             EditorGUILayout.PropertyField(m_filterHidden);
             EditorGUILayout.PropertyField(m_ignoreName);
-
-        
+            EditorGUILayout.PropertyField(m_addAnimation);
+            
             // Apply the changes so Undo/Redo is working
             serializedObject.ApplyModifiedProperties();
         
