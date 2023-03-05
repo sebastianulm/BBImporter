@@ -53,12 +53,15 @@ namespace BBImporter
             var animToken = obj["animations"];
             if (animToken is { HasValues: true })
             {
+                var mainGO = ctx.mainObject as GameObject;
+                var animation = mainGO.AddComponent<Animation>();
                 foreach (var token in obj["animations"])
                 {
                     var anim = token.ToObject<BBAnimation>();
                     ret.Add(anim);
                     var clip = anim.ToClip(groups);
                     ctx.AddObjectToAsset(anim.name, clip);
+                    animation.AddClip(clip, clip.name);
                 }
             }
             return ret;
@@ -162,8 +165,7 @@ namespace BBImporter
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
                             mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var go = mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
-                            ctx.AddObjectToAsset(goName, go);
+                            mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here

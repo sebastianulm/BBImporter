@@ -13,7 +13,6 @@ namespace BBImporter
         private SerializedProperty m_filterHidden;
         private SerializedProperty m_ignoreName;
 
-
         public override void OnEnable()
         {
             base.OnEnable();

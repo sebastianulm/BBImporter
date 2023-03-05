@@ -69,7 +69,7 @@ namespace BBImporter
                 .Where(x => x.Value.Count > 0)
                 .OrderBy(x => x.Key)
                 .Select(x => materials[x.Key]).ToArray();
-            ctx.AddObjectToAsset(name, go);
+            //ctx.AddObjectToAsset(name, go);
             return go;
         }
         private void ParseCube(JToken element)
