@@ -29,14 +29,21 @@ namespace BBImporter
                 legacy = true,
             };
 
-            foreach (var kv in animators)
+            if (animators != null)
             {
-                if (kv.Value.HasChannel(BBKeyFrameChannel.position))
-                    AddPositionChannel(kv.Value, ret, groups[kv.Key]);
-                if (kv.Value.HasChannel(BBKeyFrameChannel.rotatiom))
-                    AddRotationChannel(kv.Value, ret, groups[kv.Key]);
-                if (kv.Value.HasChannel(BBKeyFrameChannel.scale))
-                    AddScaleChannel(kv.Value, ret, groups[kv.Key]);
+                foreach (var kv in animators)
+                {
+                    if (kv.Value.HasChannel(BBKeyFrameChannel.position))
+                        AddPositionChannel(kv.Value, ret, groups[kv.Key]);
+                    if (kv.Value.HasChannel(BBKeyFrameChannel.rotatiom))
+                        AddRotationChannel(kv.Value, ret, groups[kv.Key]);
+                    if (kv.Value.HasChannel(BBKeyFrameChannel.scale))
+                        AddScaleChannel(kv.Value, ret, groups[kv.Key]);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"No bone data found for animation {name} uuid {uuid}");
             }
             return ret;
         }
@@ -82,7 +89,7 @@ namespace BBImporter
                 curveX.AddKey(bbKeyFrame.time, dataPoints.x);
                 curveY.AddKey(bbKeyFrame.time, dataPoints.y);
                 curveZ.AddKey(bbKeyFrame.time, dataPoints.z);
-            }            
+            }
             var path = GetPath(groupObject.transform);
             clip.SetCurve(path, typeof(Transform), "localScale.x", curveX);
             clip.SetCurve(path, typeof(Transform), "localScale.y", curveY);
