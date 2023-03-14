@@ -155,7 +155,7 @@ namespace BBImporter
     
         private void LoadGroup(AssetImportContext ctx, JObject file, List<Material> material)
         {
-            void LoadGroupRecursively(JToken currentGroup, string currentPrefix)
+            void LoadGroupRecursively(JToken currentGroup, string currentPrefix, GameObject root)
             {
                 foreach (var entry in currentGroup)
                 {
@@ -170,11 +170,12 @@ namespace BBImporter
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
                             mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
+                            var newGO = mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
+                            newGO.transform.SetParent(root.transform);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
-                            LoadGroupRecursively(entry["children"], entry["name"].Value<string>() + "/");
+                            LoadGroupRecursively(entry["children"], entry["name"].Value<string>() + "/", root);
                             break;
                         default:
                             Debug.Log("Unhandled type " + entry.Type);
@@ -182,8 +183,8 @@ namespace BBImporter
                     }
                 }
             }
-            LoadGroupRecursively(file["outliner"], "");
             var fakeRoot = new GameObject();
+            LoadGroupRecursively(file["outliner"], "", fakeRoot);
             ctx.AddObjectToAsset("root", fakeRoot);
             ctx.SetMainObject(fakeRoot);
         }
