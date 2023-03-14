@@ -149,6 +149,7 @@ namespace BBImporter
             }
             CombineGroupRecursive(file["outliner"], "");
             var go = mesh.BakeGameObject(ctx, file["name"].Value<string>(), Vector3.zero);
+            ctx.AddObjectToAsset(file["name"].Value<string>(), go);
             ctx.SetMainObject(go);
         }
     
