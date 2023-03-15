@@ -155,7 +155,7 @@ namespace BBImporter
     
         private void LoadGroup(AssetImportContext ctx, JObject file, List<Material> material)
         {
-            void LoadGroupRecursively(JToken currentGroup, string currentPrefix, GameObject root)
+            void LoadGroupRecursively(JToken currentGroup, string currentPrefix)
             {
                 foreach (var entry in currentGroup)
                 {
@@ -171,11 +171,13 @@ namespace BBImporter
                             mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
                             var newGO = mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
-                            newGO.transform.SetParent(root.transform);
+                            ctx.AddObjectToAsset(newGO.name, newGO);
+                            if (ctx.mainObject == null)
+                                ctx.SetMainObject(newGO);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
-                            LoadGroupRecursively(entry["children"], entry["name"].Value<string>() + "/", root);
+                            LoadGroupRecursively(entry["children"], entry["name"].Value<string>() + "/");
                             break;
                         default:
                             Debug.Log("Unhandled type " + entry.Type);
@@ -184,9 +186,7 @@ namespace BBImporter
                 }
             }
             var fakeRoot = new GameObject();
-            LoadGroupRecursively(file["outliner"], "", fakeRoot);
-            ctx.AddObjectToAsset("root", fakeRoot);
-            ctx.SetMainObject(fakeRoot);
+            LoadGroupRecursively(file["outliner"], "");
         }
         private void LoadHierarchy(AssetImportContext ctx, JObject file, List<Material> material)
         {
