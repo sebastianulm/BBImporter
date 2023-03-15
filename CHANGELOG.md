@@ -1,4 +1,6 @@
 # Change Log:
+### 0.1.2
+* Bugfixes for non-hierarchy imports
 ### 0.1.1
 * Animation Bugfixes when importing as hierarchy
 ### 0.1.0
