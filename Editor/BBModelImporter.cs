@@ -185,7 +185,6 @@ namespace BBImporter
                     }
                 }
             }
-            var fakeRoot = new GameObject();
             LoadGroupRecursively(file["outliner"], "");
         }
         private void LoadHierarchy(AssetImportContext ctx, JObject file, List<Material> material)
