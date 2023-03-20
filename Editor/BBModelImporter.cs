@@ -5,7 +5,6 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEditor.AssetImporters;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace BBImporter
 {
