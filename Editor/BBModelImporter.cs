@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEditor.AssetImporters;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace BBImporter
 {
@@ -112,7 +113,8 @@ namespace BBImporter
                     ctx.AddObjectToAsset(texture.uuid, tex);
                 }
                 mat.name = token["name"].Value<string>();
-                ctx.AddObjectToAsset(mat.name, mat);
+                var guid = token["uuid"].Value<string>();
+                ctx.AddObjectToAsset(guid, mat);
                 ret.Add(mat);
             }
             return ret;
@@ -147,14 +149,18 @@ namespace BBImporter
                 }
             }
             CombineGroupRecursive(file["outliner"], "");
-            var go = mesh.BakeGameObject(ctx, file["name"].Value<string>(), Vector3.zero);
-            ctx.AddObjectToAsset(file["name"].Value<string>(), go);
+            var guid = file["model_identifier"]?.Value<string>();
+            var name = file["name"].Value<string>();
+            if (string.IsNullOrEmpty(guid))
+                guid = name;
+            var go = mesh.BakeGameObject(ctx, name, guid, Vector3.zero);
+            ctx.AddObjectToAsset(guid, go);
             ctx.SetMainObject(go);
         }
     
         private void LoadGroup(AssetImportContext ctx, JObject file, List<Material> material)
         {
-            void LoadGroupRecursively(JToken currentGroup, string currentPrefix)
+            void LoadGroupRecursively(JToken currentGroup)
             {
                 foreach (var entry in currentGroup)
                 {
@@ -169,14 +175,14 @@ namespace BBImporter
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
                             mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var newGO = mesh.BakeGameObject(ctx, currentPrefix + goName, origin??Vector3.zero);
-                            ctx.AddObjectToAsset(newGO.name, newGO);
+                            var newGO = mesh.BakeGameObject(ctx, goName, guid, origin??Vector3.zero);
+                            ctx.AddObjectToAsset(guid, newGO);
                             if (ctx.mainObject == null)
                                 ctx.SetMainObject(newGO);
                             break;
                         case JTokenType.Object:
                             //TODO: Handle visible = false here
-                            LoadGroupRecursively(entry["children"], entry["name"].Value<string>() + "/");
+                            LoadGroupRecursively(entry["children"]);
                             break;
                         default:
                             Debug.Log("Unhandled type " + entry.Type);
@@ -184,7 +190,7 @@ namespace BBImporter
                     }
                 }
             }
-            LoadGroupRecursively(file["outliner"], "");
+            LoadGroupRecursively(file["outliner"]);
         }
         private void LoadHierarchy(AssetImportContext ctx, JObject file, List<Material> material)
         {
@@ -203,7 +209,7 @@ namespace BBImporter
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
                             mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
-                            var go = mesh.BakeGameObject(ctx, goName, origin??Vector3.zero);
+                            var go = mesh.BakeGameObject(ctx, goName, guid, origin??Vector3.zero);
                             go.transform.position = origin??Vector3.zero;
                             go.transform.SetParent(parent.transform, true);
                             break;
@@ -221,8 +227,12 @@ namespace BBImporter
                     }
                 }
             }
+            var guid = file["model_identifier"]?.Value<string>();
+            var nameOfObject = file["name"].Value<string>();
+            if (string.IsNullOrEmpty(guid))
+                guid = nameOfObject;
             var rootGO = new GameObject();
-            ctx.AddObjectToAsset("root", rootGO);
+            ctx.AddObjectToAsset(guid, rootGO);
             ctx.SetMainObject(rootGO);
             LoadGroupRecursively(file["outliner"], rootGO);
         }

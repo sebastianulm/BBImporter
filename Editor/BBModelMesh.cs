@@ -45,7 +45,7 @@ namespace BBImporter
                 ParseMesh(element);
             }
         }
-        public GameObject BakeGameObject(AssetImportContext ctx, string name, Vector3 origin)
+        public GameObject BakeGameObject(AssetImportContext ctx, string name, string guid, Vector3 origin)
         {
             var mesh = new Mesh();
             mesh.name = name = name.Replace("/", ".");
@@ -59,7 +59,7 @@ namespace BBImporter
             }
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
-            ctx.AddObjectToAsset(mesh.name, mesh);
+            ctx.AddObjectToAsset(guid, mesh);
             GameObject go = new GameObject();
             go.name = name;
             var filter = go.AddComponent<MeshFilter>();
