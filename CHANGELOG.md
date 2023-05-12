@@ -1,4 +1,7 @@
 # Change Log:
+
+### 0.1.3
+* Bugfixes for hierarchy imports. Nesting of Bones and rotations fixes
 ### 0.1.2
 * Bugfixes for non-hierarchy imports
 ### 0.1.1

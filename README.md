@@ -13,7 +13,7 @@ Unity's own Package Manager supports [importing packages through a URL to a Git 
 
 ## Project Goals
 - It's a simple Plugin. It does ONLY imports.
-- ONLY for the blockbench 4 beta onward.
+- ONLY for the blockbench 5+;
 - ONLY for generic Models
 - ONLY for importing from BBModel files, no GLTF or JSON, etc
 - Getting the most out of this plugin has some implications how you organize your files in terms of naming, facing, texture organisation.
@@ -23,11 +23,11 @@ Unity's own Package Manager supports [importing packages through a URL to a Git 
 This converts Vectors from OpenGL (Left handed) to Unity (Right handed) when importing.
 Accordingly it will also convert euler rotations, by inverting y and z rotations. 
 This leads to Models looking the same way. 
-Additionally, NORTH in Blockbench will be Vector3.backwards in Unity. THIS MIGHT CHANGE
+Additionally, NORTH in Blockbench will be Vector3.forward (+Z) in Unity.
 
 ### Settings
 * Material Template -> A copy of this Material will be created and mainTexture set to the texture of the face
-* Import Mode -> Select here how the blockbench file is conveerted into game objects
+* Import Mode -> Select here how the blockbench file is converted into game objects
 * Filter Hidden -> No meshes will be created for file objects that are hidden
 
 ### Materials
@@ -40,15 +40,14 @@ A MeshRenderer is attached to each generated object, supplied with the created M
 The Process is very similar to the built in Importers.
 
 ### Animations
-Still very much work in Progress. Needs to be imported as Hierarchy. BlockBench uses Groups
+Needs to be imported as Hierarchy. BlockBench uses Groups
 to animate, so this importer creates empty game objects for groups and animates their transforms.
+Due to how Unity (and hierarchical models in general) work, transform positions will be different in 
+Unity than in Blockbench
 
 
 ### Planned features
-- Fixing Bugs first, then moving on to more stuff
-- (new Settings) Shared Material, use MaterialPropertyBlock on renderer to set texture
 - (Feature) Texture-Deduplication
-- (new Setting) Shared material, the generated GOs will have a shared material. Useful for pallete textures
 - (Feature) Runtime Script that retains some parsed form of the parsed Model file
 - (Feature) Animation bezier if compatible with Unities animation system
 

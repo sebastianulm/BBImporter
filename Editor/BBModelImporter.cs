@@ -207,17 +207,19 @@ namespace BBImporter
                                 continue;
                             var mesh = new BBModelMesh(material, Resolution);
                             var origin = element["origin"]?.Values<float>()?.ToArray().ReadVector3();
+                            var rotation = element["rotation"]?.Values<float>()?.ToArray().ReadQuaternion();
                             mesh.AddElement(file, element);
                             var goName = file["elements"].First(x => x.Value<string>("uuid") == entry.Value<string>()).Value<string>("name");
                             var go = mesh.BakeGameObject(ctx, goName, guid, origin??Vector3.zero);
-                            go.transform.position = origin??Vector3.zero;
-                            go.transform.SetParent(parent.transform, true);
+                            go.transform.position = (origin??Vector3.zero) - parent.transform.position;
+                            go.transform.SetParent(parent.transform, false);
                             break;
                         case JTokenType.Object:
                             var outliner = entry.ToObject<BBOutliner>();
                             var boneGO = new GameObject(outliner.name + "-Group");
-                            boneGO.transform.position = outliner.origin.ReadVector3();
-                            boneGO.transform.SetParent(parent.transform, true);
+                            boneGO.transform.position = outliner.origin.ReadVector3() - parent.transform.position;
+                            boneGO.transform.rotation = outliner.rotation.ReadQuaternion();
+                            boneGO.transform.SetParent(parent.transform, false);
                             groups.Add(outliner.uuid, boneGO);
                             LoadGroupRecursively(entry["children"], boneGO);
                             break;

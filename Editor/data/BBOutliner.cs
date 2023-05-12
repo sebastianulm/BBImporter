@@ -4,6 +4,7 @@ namespace BBImporter
     {
         public string name;
         public float[] origin;
+        public float[] rotation;
         public int color;
         public string uuid;
         public bool export;

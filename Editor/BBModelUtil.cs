@@ -26,7 +26,8 @@ namespace BBImporter
         internal static Quaternion ReadQuaternion(float[] arr)
         {
             if (arr == null) return Quaternion.identity;
-            return Quaternion.Euler(arr[0], -arr[1], -arr[2]);
+            //return Quaternion.Euler(arr[0], -arr[1], -arr[2]);
+            return Quaternion.Euler(-arr[0], arr[1], arr[2]);
         }
         internal static Vector2 ReadVector2(float?[] arr)
         {
