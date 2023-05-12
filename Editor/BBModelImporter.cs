@@ -42,11 +42,11 @@ namespace BBImporter
                     break;
                 case MeshImportMode.WithHierarchyAndAnimations:
                     LoadHierarchy(ctx, obj, materials);
+                    var animations = LoadAnimations(ctx, obj, groups);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            var animations = LoadAnimations(ctx, obj, groups);
         }
         private List<BBAnimation> LoadAnimations(AssetImportContext ctx, JObject obj, Dictionary<string, GameObject> groups)
         {
