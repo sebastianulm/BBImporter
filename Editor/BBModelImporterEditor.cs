@@ -37,7 +37,11 @@ namespace BBImporter
         
             if (GUILayout.Button("Reimport"))
             {
+#if UNITY_2022_3_OR_NEWER
                 SaveChanges();
+#else
+                ApplyAndImport();
+#endif
             }
 
             // Call ApplyRevertGUI to show Apply and Revert buttons.

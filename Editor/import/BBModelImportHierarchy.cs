@@ -47,8 +47,10 @@ namespace BBImporter
                         var element = file["elements"].First(x => x.Value<string>("uuid") == guid);
                         if (element["visibility"]?.Value<bool>() == false && filterHidden)
                             return;
-                        switch (element["type"].Value<string>())
+                        string type = element["type"]?.Value<string>();
+                        switch (type)
                         {
+                            case null:
                             case "cube":
                             case "mesh":
                                 LoadMesh(file, outline, element, parent, ctx, guid);
