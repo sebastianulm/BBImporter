@@ -7,14 +7,15 @@ using UnityEngine;
 
 namespace BBImporter
 {
-    public class BBModelMesh
+    public class BBMeshParser
     {
         private readonly List<Material> materials;
         private readonly List<Vector2> textureSizes;
-        private List<BBVertex> vertices;
-        private Dictionary<int, List<int>> triangles;
-        private Vector2 resolution;
-        public BBModelMesh(List<Material> materials, Vector2 resolution)
+        private readonly List<BBVertex> vertices;
+        private readonly Dictionary<int, List<int>> triangles;
+        private readonly Vector2 resolution;
+        public bool IsEmpty => vertices.Count <= 0 || triangles.Count <= 0;
+        public BBMeshParser(List<Material> materials, Vector2 resolution)
         {
             this.materials = materials;
             this.resolution = resolution;
@@ -33,7 +34,7 @@ namespace BBImporter
                 textureSizes.Add(Vector2.one);
             }
         }
-        public void AddElement(JObject file, JToken element)
+        public void AddElement(JToken element)
         {
             var type = element["type"];
             if (type == null || type.Value<string>() == "cube")
@@ -45,7 +46,7 @@ namespace BBImporter
                 ParseMesh(element);
             }
         }
-        public GameObject BakeGameObject(AssetImportContext ctx, string name, string guid, Vector3 origin)
+        public GameObject BakeMesh(AssetImportContext ctx, string name, string guid, Vector3 origin)
         {
             var mesh = new Mesh();
             mesh.name = name = name.Replace("/", ".");
@@ -72,14 +73,29 @@ namespace BBImporter
             //ctx.AddObjectToAsset(name, go);
             return go;
         }
-        private void ParseCube(JToken element)
+        private void ParseLocator(JToken element)
+        {
+            BBLocator bbLocator;
+            try
+            {
+                bbLocator = element.ToObject<BBLocator>();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                return;
+            }
+            var origin = bbLocator.position.ReadVector3();
+            var rot = bbLocator.rotation.ReadQuaternion();
+        }
+        public void ParseCube(JToken element)
         {
             var bbCube = new BBModelCube(element);
             bbCube.GetMesh(vertices, triangles, resolution);
         }
-        private void ParseMesh(JToken element)
+        public void ParseMesh(JToken element)
         {
-            BBMesh bbMesh = default;
+            BBMesh bbMesh;
             try
             {
                bbMesh = element.ToObject<BBMesh>();
@@ -87,6 +103,7 @@ namespace BBImporter
             catch (Exception e)
             {
                 Debug.LogException(e);
+                return;
             }
             var origin = bbMesh.origin.ReadVector3();
             var rot = bbMesh.rotation.ReadQuaternion();
