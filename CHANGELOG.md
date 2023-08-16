@@ -1,4 +1,6 @@
 # Change Log:
+### 0.1.5
+* Added Suffix "-Locator" to locators
 ### 0.1.4
 * Removed box for skipping animations
 * Added support for Locators when importing hierarchy

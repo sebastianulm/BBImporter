@@ -82,6 +82,7 @@ namespace BBImporter
         private void LoadLocator(JObject file, JToken outline, JToken element, GameObject parent)
         {
             var goName = file["elements"].First(x => x.Value<string>("uuid") == outline.Value<string>()).Value<string>("name");
+            goName += ("-Locator");
             var origin = element["position"]?.Values<float>()?.ToArray().ReadVector3();
             var rotation = element["rotation"]?.Values<float>()?.ToArray().ReadQuaternion();
             var go = new GameObject(goName);
